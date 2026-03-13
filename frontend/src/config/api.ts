@@ -1,5 +1,6 @@
 // API configuration - uses relative paths with Vite proxy in development
 export const API_CONFIG = {
+  BASE_URL: "",
   ENDPOINTS: {
     CHAT: "/api/chat",
     ABORT: "/api/abort",
@@ -8,6 +9,11 @@ export const API_CONFIG = {
     CONVERSATIONS: "/api/projects",
   },
 } as const;
+
+// Helper function to get base API URL
+export const getApiBaseUrl = () => {
+  return API_CONFIG.BASE_URL;
+};
 
 // Helper function to get full API URL
 export const getApiUrl = (endpoint: string) => {

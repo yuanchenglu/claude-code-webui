@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { FolderIcon } from "@heroicons/react/24/outline";
+import { FolderIcon, PlusIcon } from "@heroicons/react/24/outline";
 import type { ProjectsResponse, ProjectInfo } from "../types";
 import { getProjectsUrl } from "../config/api";
 import { SettingsButton } from "./SettingsButton";
 import { SettingsModal } from "./SettingsModal";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { OpenProjectModal } from "./OpenProjectModal";
 
 export function ProjectSelector() {
   const { t } = useTranslation();
@@ -14,6 +15,7 @@ export function ProjectSelector() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isOpenProjectModalOpen, setIsOpenProjectModalOpen] = useState(false);
   const navigate = useNavigate();
 
   const loadProjects = useCallback(async () => {
@@ -51,6 +53,13 @@ export function ProjectSelector() {
     setIsSettingsOpen(false);
   };
 
+  const handleOpenProjectSelect = (projectPath: string) => {
+    const normalizedPath = projectPath.startsWith("/")
+      ? projectPath
+      : `/${projectPath}`;
+    navigate(`/projects${normalizedPath}`);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -72,7 +81,6 @@ export function ProjectSelector() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
       <div className="max-w-4xl mx-auto p-6">
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-slate-800 dark:text-slate-100 text-3xl font-bold tracking-tight">
             {t("projects.title")}
@@ -81,6 +89,19 @@ export function ProjectSelector() {
             <LanguageSwitcher />
             <SettingsButton onClick={handleSettingsClick} />
           </div>
+        </div>
+
+        <div className="mb-6">
+          <button
+            type="button"
+            onClick={() => setIsOpenProjectModalOpen(true)}
+            className="w-full flex items-center justify-center gap-2 p-4 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg transition-colors"
+          >
+            <PlusIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <span className="text-blue-700 dark:text-blue-300 font-medium">
+              {t("projects.openNew")}
+            </span>
+          </button>
         </div>
 
         <div className="space-y-3">
@@ -106,8 +127,13 @@ export function ProjectSelector() {
           )}
         </div>
 
-        {/* Settings Modal */}
         <SettingsModal isOpen={isSettingsOpen} onClose={handleSettingsClose} />
+
+        <OpenProjectModal
+          isOpen={isOpenProjectModalOpen}
+          onClose={() => setIsOpenProjectModalOpen(false)}
+          onProjectSelect={handleOpenProjectSelect}
+        />
       </div>
     </div>
   );
