@@ -27,7 +27,18 @@
   },
   "projects": {
     "title": "选择项目",
-    "recentProjects": "最近项目"
+    "recentProjects": "最近项目",
+    "openNew": "打开新项目",
+    "openProject": {
+      "title": "打开项目",
+      "searchPlaceholder": "输入项目路径，例如 ~/Projects/",
+      "searching": "搜索中...",
+      "noResults": "未找到匹配的项目",
+      "typeToSearch": "输入路径开始搜索",
+      "recentProjects": "最近项目",
+      "openProject": "打开项目",
+      "keyboardHint": "使用 ↑ ↓ 键盘选择，Enter 确认"
+    }
   },
   "settings": {
     "title": "设置",

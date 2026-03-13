@@ -27,7 +27,18 @@
   },
   "projects": {
     "title": "Select a Project",
-    "recentProjects": "Recent Projects"
+    "recentProjects": "Recent Projects",
+    "openNew": "Open New Project",
+    "openProject": {
+      "title": "Open Project",
+      "searchPlaceholder": "Enter project path, e.g. ~/Projects/",
+      "searching": "Searching...",
+      "noResults": "No matching projects found",
+      "typeToSearch": "Type a path to start searching",
+      "recentProjects": "Recent Projects",
+      "openProject": "Open Project",
+      "keyboardHint": "Use ↑ ↓ arrows to select, Enter to confirm"
+    }
   },
   "settings": {
     "title": "Settings",
