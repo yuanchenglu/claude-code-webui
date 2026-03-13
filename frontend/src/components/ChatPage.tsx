@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ChevronLeftIcon } from "@heroicons/react/24/outline";
 import type {
   ChatRequest,
@@ -19,12 +20,14 @@ import { HistoryButton } from "./chat/HistoryButton";
 import { ChatInput } from "./chat/ChatInput";
 import { ChatMessages } from "./chat/ChatMessages";
 import { HistoryView } from "./HistoryView";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 import { getChatUrl, getProjectsUrl } from "../config/api";
 import { KEYBOARD_SHORTCUTS } from "../utils/constants";
 import { normalizeWindowsPath } from "../utils/pathUtils";
 import type { StreamingContext } from "../hooks/streaming/useMessageProcessor";
 
 export function ChatPage() {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -438,11 +441,12 @@ export function ChatPage() {
       <div className="max-w-6xl mx-auto p-3 sm:p-6 h-screen flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between mb-4 sm:mb-8 flex-shrink-0">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
             {isHistoryView && (
               <button
+                type="button"
                 onClick={handleBackToChat}
-                className="p-2 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 transition-all duration-200 backdrop-blur-sm shadow-sm hover:shadow-md"
+                className="p-2 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 transition-all duration-200 backdrop-blur-sm shadow-sm hover:shadow-md flex-shrink-0"
                 aria-label="Back to chat"
               >
                 <ChevronLeftIcon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
@@ -450,63 +454,67 @@ export function ChatPage() {
             )}
             {isLoadedConversation && (
               <button
+                type="button"
                 onClick={handleBackToHistory}
-                className="p-2 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 transition-all duration-200 backdrop-blur-sm shadow-sm hover:shadow-md"
+                className="p-2 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 transition-all duration-200 backdrop-blur-sm shadow-sm hover:shadow-md flex-shrink-0"
                 aria-label="Back to history"
               >
                 <ChevronLeftIcon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
               </button>
             )}
-            <div>
+            <div className="min-w-0 flex-1">
               <nav aria-label="Breadcrumb">
-                <div className="flex items-center">
+                <div className="flex items-center min-w-0">
                   <button
+                    type="button"
                     onClick={handleBackToProjects}
-                    className="text-slate-800 dark:text-slate-100 text-lg sm:text-3xl font-bold tracking-tight hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 rounded-md px-1 -mx-1"
-                    aria-label="Back to project selection"
+                    className="text-slate-800 dark:text-slate-100 text-base sm:text-3xl font-bold tracking-tight hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 rounded-md px-1 -mx-1 truncate"
+                    aria-label={t("header.backToProjects")}
                   >
                     Claude Code Web UI
                   </button>
                   {(isHistoryView || sessionId) && (
                     <>
                       <span
-                        className="text-slate-800 dark:text-slate-100 text-lg sm:text-3xl font-bold tracking-tight mx-3 select-none"
+                        className="text-slate-800 dark:text-slate-100 text-base sm:text-3xl font-bold tracking-tight mx-2 sm:mx-3 select-none flex-shrink-0"
                         aria-hidden="true"
                       >
-                        {" "}
-                        ›{" "}
+                        ›
                       </span>
                       <h1
-                        className="text-slate-800 dark:text-slate-100 text-lg sm:text-3xl font-bold tracking-tight"
+                        className="text-slate-800 dark:text-slate-100 text-base sm:text-3xl font-bold tracking-tight truncate"
                         aria-current="page"
                       >
                         {isHistoryView
-                          ? "Conversation History"
-                          : "Conversation"}
+                          ? t("header.conversationHistory")
+                          : t("header.conversation")}
                       </h1>
                     </>
                   )}
                 </div>
               </nav>
               {workingDirectory && (
-                <div className="flex items-center text-sm font-mono mt-1">
+                <div className="flex items-center text-xs sm:text-sm font-mono mt-1 min-w-0">
                   <button
+                    type="button"
                     onClick={handleBackToProjectChat}
-                    className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 rounded px-1 -mx-1 cursor-pointer"
+                    className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 rounded px-1 -mx-1 cursor-pointer truncate"
                     aria-label={`Return to new chat in ${workingDirectory}`}
                   >
-                    {workingDirectory}
+                    <span className="hidden sm:inline">{workingDirectory}</span>
+                    <span className="sm:hidden">…</span>
                   </button>
                   {sessionId && (
-                    <span className="ml-2 text-xs text-slate-600 dark:text-slate-400">
-                      Session: {sessionId.substring(0, 8)}...
+                    <span className="ml-2 text-xs text-slate-600 dark:text-slate-400 flex-shrink-0">
+                      {t("chat.session")}: {sessionId.substring(0, 8)}...
                     </span>
                   )}
                 </div>
               )}
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            <LanguageSwitcher />
             {!isHistoryView && <HistoryButton onClick={handleHistoryClick} />}
             <SettingsButton onClick={handleSettingsClick} />
           </div>
@@ -520,17 +528,15 @@ export function ChatPage() {
             onBack={handleBackToChat}
           />
         ) : historyLoading ? (
-          /* Loading conversation history */
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
               <div className="w-8 h-8 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin mx-auto mb-4"></div>
               <p className="text-slate-600 dark:text-slate-400">
-                Loading conversation history...
+                {t("chat.loading")}
               </p>
             </div>
           </div>
         ) : historyError ? (
-          /* Error loading conversation history */
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center max-w-md">
               <div className="w-16 h-16 mx-auto mb-4 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
@@ -539,6 +545,7 @@ export function ChatPage() {
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -549,16 +556,17 @@ export function ChatPage() {
                 </svg>
               </div>
               <h2 className="text-slate-800 dark:text-slate-100 text-xl font-semibold mb-2">
-                Error Loading Conversation
+                {t("chat.errorLoading")}
               </h2>
               <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">
                 {historyError}
               </p>
               <button
+                type="button"
                 onClick={() => navigate({ search: "" })}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-                Start New Conversation
+                {t("chat.startNew")}
               </button>
             </div>
           </div>

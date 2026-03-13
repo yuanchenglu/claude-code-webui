@@ -1,0 +1,44 @@
+{
+  "header": {
+    "backToProjects": "Back to project selection",
+    "chat": "Chat",
+    "conversationHistory": "Conversation History",
+    "conversation": "Conversation"
+  },
+  "chat": {
+    "startConversation": "Start a conversation with Claude",
+    "typeMessage": "Type your message below to begin",
+    "typePlaceholder": "Type message...",
+    "send": "Send",
+    "loading": "Loading conversation history...",
+    "errorLoading": "Error Loading Conversation",
+    "startNew": "Start New Conversation",
+    "session": "Session"
+  },
+  "history": {
+    "title": "Conversation History",
+    "noConversations": "No conversations found",
+    "startNewToSee": "Start a new conversation to see it here.",
+    "messages": "messages",
+    "lastActive": "Last active",
+    "loadError": "Error loading conversations"
+  },
+  "projects": {
+    "title": "Select a Project",
+    "recentProjects": "Recent Projects"
+  },
+  "settings": {
+    "title": "Settings",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "enterKeyBehavior": "Enter Key Behavior",
+    "enterToSend": "Enter to send, Shift+Enter for new line",
+    "enterForNewLine": "Enter for new line, Ctrl/Cmd+Enter to send"
+  },
+  "language": {
+    "switchToZh": "切换到中文",
+    "switchToEn": "Switch to English"
+  }
+}

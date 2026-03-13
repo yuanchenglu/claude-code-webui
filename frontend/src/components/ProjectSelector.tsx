@@ -1,23 +1,22 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { FolderIcon } from "@heroicons/react/24/outline";
 import type { ProjectsResponse, ProjectInfo } from "../types";
 import { getProjectsUrl } from "../config/api";
 import { SettingsButton } from "./SettingsButton";
 import { SettingsModal } from "./SettingsModal";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 export function ProjectSelector() {
+  const { t } = useTranslation();
   const [projects, setProjects] = useState<ProjectInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    loadProjects();
-  }, []);
-
-  const loadProjects = async () => {
+  const loadProjects = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(getProjectsUrl());
@@ -31,7 +30,11 @@ export function ProjectSelector() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadProjects();
+  }, [loadProjects]);
 
   const handleProjectSelect = (projectPath: string) => {
     const normalizedPath = projectPath.startsWith("/")
@@ -52,7 +55,7 @@ export function ProjectSelector() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-slate-600 dark:text-slate-400">
-          Loading projects...
+          {t("chat.loading")}
         </div>
       </div>
     );
@@ -72,19 +75,23 @@ export function ProjectSelector() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-slate-800 dark:text-slate-100 text-3xl font-bold tracking-tight">
-            Select a Project
+            {t("projects.title")}
           </h1>
-          <SettingsButton onClick={handleSettingsClick} />
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher />
+            <SettingsButton onClick={handleSettingsClick} />
+          </div>
         </div>
 
         <div className="space-y-3">
           {projects.length > 0 && (
             <>
               <h2 className="text-slate-700 dark:text-slate-300 text-lg font-medium mb-4">
-                Recent Projects
+                {t("projects.recentProjects")}
               </h2>
               {projects.map((project) => (
                 <button
+                  type="button"
                   key={project.path}
                   onClick={() => handleProjectSelect(project.path)}
                   className="w-full flex items-center gap-3 p-4 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg transition-colors text-left"

@@ -1,0 +1,44 @@
+{
+  "header": {
+    "backToProjects": "返回项目选择",
+    "chat": "聊天",
+    "conversationHistory": "对话历史",
+    "conversation": "对话"
+  },
+  "chat": {
+    "startConversation": "开始与 Claude 对话",
+    "typeMessage": "在下方输入消息开始对话",
+    "typePlaceholder": "输入消息...",
+    "send": "发送",
+    "loading": "正在加载对话历史...",
+    "errorLoading": "加载对话失败",
+    "startNew": "开始新对话",
+    "session": "会话"
+  },
+  "history": {
+    "title": "对话历史",
+    "noConversations": "暂无对话记录",
+    "startNewToSee": "开始新对话后将在此显示。",
+    "messages": "条消息",
+    "lastActive": "最后活跃",
+    "loadError": "加载对话列表失败"
+  },
+  "projects": {
+    "title": "选择项目",
+    "recentProjects": "最近项目"
+  },
+  "settings": {
+    "title": "设置",
+    "theme": "主题",
+    "light": "浅色",
+    "dark": "深色",
+    "system": "跟随系统",
+    "enterKeyBehavior": "回车键行为",
+    "enterToSend": "回车发送，Shift+回车换行",
+    "enterForNewLine": "回车换行，Ctrl/Cmd+回车发送"
+  },
+  "language": {
+    "switchToZh": "切换到中文",
+    "switchToEn": "Switch to English"
+  }
+}

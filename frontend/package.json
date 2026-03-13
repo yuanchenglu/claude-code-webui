@@ -23,8 +23,10 @@
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "dayjs": "^1.11.13",
+    "i18next": "^25.8.18",
     "react": "^19.1.0",
     "react-dom": "^19.1.1",
+    "react-i18next": "^16.5.8",
     "react-router-dom": "^7.6.2"
   },
   "devDependencies": {

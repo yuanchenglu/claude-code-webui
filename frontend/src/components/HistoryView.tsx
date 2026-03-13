@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import type { ConversationSummary } from "../../../shared/types";
 import { getHistoriesUrl } from "../config/api";
 
@@ -10,6 +11,7 @@ interface HistoryViewProps {
 }
 
 export function HistoryView({ encodedName }: HistoryViewProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,7 +59,7 @@ export function HistoryView({ encodedName }: HistoryViewProps) {
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-slate-600 dark:text-slate-400">
-            {!encodedName ? "Loading project..." : "Loading conversations..."}
+            {t("chat.loading")}
           </p>
         </div>
       </div>
@@ -74,6 +76,7 @@ export function HistoryView({ encodedName }: HistoryViewProps) {
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
+              aria-hidden="true"
             >
               <path
                 strokeLinecap="round"
@@ -84,7 +87,7 @@ export function HistoryView({ encodedName }: HistoryViewProps) {
             </svg>
           </div>
           <h2 className="text-slate-800 dark:text-slate-100 text-xl font-semibold mb-2">
-            Error Loading History
+            {t("history.loadError")}
           </h2>
           <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">
             {error}
@@ -104,6 +107,7 @@ export function HistoryView({ encodedName }: HistoryViewProps) {
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
+              aria-hidden="true"
             >
               <path
                 strokeLinecap="round"
@@ -114,10 +118,10 @@ export function HistoryView({ encodedName }: HistoryViewProps) {
             </svg>
           </div>
           <h2 className="text-slate-800 dark:text-slate-100 text-xl font-semibold mb-2">
-            No Conversations Yet
+            {t("history.noConversations")}
           </h2>
           <p className="text-slate-600 dark:text-slate-400 text-sm max-w-sm">
-            Start chatting to see your conversation history here.
+            {t("history.startNewToSee")}
           </p>
         </div>
       </div>
@@ -137,11 +141,11 @@ export function HistoryView({ encodedName }: HistoryViewProps) {
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
-                    Session: {conversation.sessionId.substring(0, 8)}...
+                    {t("chat.session")}: {conversation.sessionId.substring(0, 8)}...
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                     {new Date(conversation.startTime).toLocaleString()} •{" "}
-                    {conversation.messageCount} messages
+                    {conversation.messageCount} {t("history.messages")}
                   </p>
                   <p className="text-sm text-slate-600 dark:text-slate-300 mt-2 line-clamp-2">
                     {conversation.lastMessagePreview}
