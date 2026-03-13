@@ -1,6 +1,7 @@
 import { useEffect, useCallback, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { ChevronLeftIcon } from "@heroicons/react/24/outline";
+import { useTranslation } from "react-i18next";
 import type {
   ChatRequest,
   ChatMessage,
@@ -19,12 +20,14 @@ import { HistoryButton } from "./chat/HistoryButton";
 import { ChatInput } from "./chat/ChatInput";
 import { ChatMessages } from "./chat/ChatMessages";
 import { HistoryView } from "./HistoryView";
-import { getChatUrl, getProjectsUrl } from "../config/api";
+import { LanguageSwitcher } from "./LanguageSwitcher";
+import { getChatUrl, getProjectsUrl, getPermissionUrl, getHistoriesUrl } from "../config/api";
 import { KEYBOARD_SHORTCUTS } from "../utils/constants";
 import { normalizeWindowsPath } from "../utils/pathUtils";
 import type { StreamingContext } from "../hooks/streaming/useMessageProcessor";
 
 export function ChatPage() {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -84,6 +87,7 @@ export function ChatPage() {
   } = useAutoHistoryLoader(
     getEncodedName() || undefined,
     sessionId || undefined,
+    false,
   );
 
   // Initialize chat state with loaded history
@@ -209,6 +213,17 @@ export function ChatPage() {
             shouldAbort = true;
             await createAbortHandler(requestId)();
           },
+          onPermissionRequest: async (data) => {
+            const patterns: string[] = [];
+            if (data.toolName === "Bash" && data.toolInput.command) {
+              patterns.push(`Bash(${data.toolInput.command}:*)`);
+            } else if (data.toolName === "AskUserQuestion") {
+              patterns.push("AskUserQuestion");
+            } else {
+              patterns.push(data.toolName);
+            }
+            showPermissionRequest(data.toolName, patterns, data.requestId);
+          },
         };
 
         while (true) {
@@ -259,6 +274,7 @@ export function ChatPage() {
       processStreamLine,
       handlePermissionError,
       createAbortHandler,
+      showPermissionRequest,
     ],
   );
 
@@ -266,56 +282,67 @@ export function ChatPage() {
     abortRequest(currentRequestId, isLoading, resetRequestState);
   }, [abortRequest, currentRequestId, isLoading, resetRequestState]);
 
-  // Permission request handlers
+  const sendPermissionResponse = useCallback(
+    async (requestId: string, allow: boolean, rememberEntry?: string) => {
+      try {
+        await fetch(getPermissionUrl(), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            requestId,
+            allow,
+            rememberEntry,
+          }),
+        });
+      } catch (error) {
+        console.error("Failed to send permission response:", error);
+      }
+    },
+    [],
+  );
+
   const handlePermissionAllow = useCallback(() => {
     if (!permissionRequest) return;
 
-    // Add all patterns temporarily
     let updatedAllowedTools = allowedTools;
     permissionRequest.patterns.forEach((pattern) => {
       updatedAllowedTools = allowToolTemporary(pattern, updatedAllowedTools);
     });
 
+    sendPermissionResponse(permissionRequest.toolUseId, true);
     closePermissionRequest();
-
-    if (currentSessionId) {
-      sendMessage("continue", updatedAllowedTools, true);
-    }
   }, [
     permissionRequest,
-    currentSessionId,
-    sendMessage,
     allowedTools,
     allowToolTemporary,
     closePermissionRequest,
+    sendPermissionResponse,
   ]);
 
   const handlePermissionAllowPermanent = useCallback(() => {
     if (!permissionRequest) return;
 
-    // Add all patterns permanently
     let updatedAllowedTools = allowedTools;
     permissionRequest.patterns.forEach((pattern) => {
       updatedAllowedTools = allowToolPermanent(pattern, updatedAllowedTools);
     });
 
+    const rememberEntry = permissionRequest.patterns[0];
+    sendPermissionResponse(permissionRequest.toolUseId, true, rememberEntry);
     closePermissionRequest();
-
-    if (currentSessionId) {
-      sendMessage("continue", updatedAllowedTools, true);
-    }
   }, [
     permissionRequest,
-    currentSessionId,
-    sendMessage,
     allowedTools,
     allowToolPermanent,
     closePermissionRequest,
+    sendPermissionResponse,
   ]);
 
   const handlePermissionDeny = useCallback(() => {
+    if (!permissionRequest) return;
+    sendPermissionResponse(permissionRequest.toolUseId, false);
     closePermissionRequest();
-  }, [closePermissionRequest]);
+  }, [permissionRequest, closePermissionRequest, sendPermissionResponse]);
 
   // Plan mode request handlers
   const handlePlanAcceptWithEdits = useCallback(() => {
@@ -400,6 +427,39 @@ export function ChatPage() {
     loadProjects();
   }, []);
 
+  useEffect(() => {
+    if (
+      sessionId ||
+      isHistoryView ||
+      !getEncodedName() ||
+      projects.length === 0
+    ) {
+      return;
+    }
+
+    const loadLatestConversation = async () => {
+      const encodedName = getEncodedName();
+      if (!encodedName) return;
+
+      try {
+        const response = await fetch(getHistoriesUrl(encodedName));
+        if (response.ok) {
+          const data = await response.json();
+          const conversations = data.conversations || [];
+          if (conversations.length > 0) {
+            const searchParams = new URLSearchParams();
+            searchParams.set("sessionId", conversations[0].sessionId);
+            navigate({ search: searchParams.toString() }, { replace: true });
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load latest conversation:", error);
+      }
+    };
+
+    loadLatestConversation();
+  }, [projects, sessionId, isHistoryView, getEncodedName, navigate]);
+
   const handleBackToChat = useCallback(() => {
     navigate({ search: "" });
   }, [navigate]);
@@ -435,78 +495,76 @@ export function ChatPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
-      <div className="max-w-6xl mx-auto p-3 sm:p-6 h-screen flex flex-col">
+      <div className="max-w-6xl mx-auto p-2 sm:p-6 h-screen flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4 sm:mb-8 flex-shrink-0">
-          <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between mb-2 sm:mb-8 flex-shrink-0 gap-2">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
             {isHistoryView && (
               <button
                 onClick={handleBackToChat}
-                className="p-2 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 transition-all duration-200 backdrop-blur-sm shadow-sm hover:shadow-md"
+                className="p-1.5 sm:p-2 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 transition-all duration-200 backdrop-blur-sm shadow-sm hover:shadow-md flex-shrink-0"
                 aria-label="Back to chat"
               >
-                <ChevronLeftIcon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                <ChevronLeftIcon className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600 dark:text-slate-400" />
               </button>
             )}
             {isLoadedConversation && (
               <button
                 onClick={handleBackToHistory}
-                className="p-2 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 transition-all duration-200 backdrop-blur-sm shadow-sm hover:shadow-md"
+                className="p-1.5 sm:p-2 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 transition-all duration-200 backdrop-blur-sm shadow-sm hover:shadow-md flex-shrink-0"
                 aria-label="Back to history"
               >
-                <ChevronLeftIcon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                <ChevronLeftIcon className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600 dark:text-slate-400" />
               </button>
             )}
-            <div>
+            <div className="min-w-0 flex-1">
               <nav aria-label="Breadcrumb">
-                <div className="flex items-center">
+                <div className="flex items-center min-w-0">
                   <button
                     onClick={handleBackToProjects}
-                    className="text-slate-800 dark:text-slate-100 text-lg sm:text-3xl font-bold tracking-tight hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 rounded-md px-1 -mx-1"
-                    aria-label="Back to project selection"
+                    className="text-slate-800 dark:text-slate-100 text-sm sm:text-3xl font-bold tracking-tight hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 rounded-md px-1 -mx-1 truncate"
+                    aria-label={t('nav.backToProjects')}
                   >
-                    Claude Code Web UI
+                    {t('app.title')}
                   </button>
                   {(isHistoryView || sessionId) && (
                     <>
                       <span
-                        className="text-slate-800 dark:text-slate-100 text-lg sm:text-3xl font-bold tracking-tight mx-3 select-none"
+                        className="text-slate-800 dark:text-slate-100 text-sm sm:text-3xl font-bold tracking-tight mx-1 sm:mx-3 select-none flex-shrink-0"
                         aria-hidden="true"
                       >
-                        {" "}
-                        ›{" "}
+                        ›
                       </span>
                       <h1
-                        className="text-slate-800 dark:text-slate-100 text-lg sm:text-3xl font-bold tracking-tight"
+                        className="text-slate-800 dark:text-slate-100 text-sm sm:text-3xl font-bold tracking-tight truncate"
                         aria-current="page"
                       >
-                        {isHistoryView
-                          ? "Conversation History"
-                          : "Conversation"}
+                        {isHistoryView ? t('nav.conversationHistory') : t('nav.conversation')}
                       </h1>
                     </>
                   )}
                 </div>
               </nav>
               {workingDirectory && (
-                <div className="flex items-center text-sm font-mono mt-1">
+                <div className="hidden sm:flex items-center text-sm font-mono mt-1">
                   <button
                     onClick={handleBackToProjectChat}
-                    className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 rounded px-1 -mx-1 cursor-pointer"
+                    className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 rounded px-1 -mx-1 cursor-pointer truncate"
                     aria-label={`Return to new chat in ${workingDirectory}`}
                   >
                     {workingDirectory}
                   </button>
                   {sessionId && (
-                    <span className="ml-2 text-xs text-slate-600 dark:text-slate-400">
-                      Session: {sessionId.substring(0, 8)}...
+                    <span className="ml-2 text-xs text-slate-600 dark:text-slate-400 flex-shrink-0">
+                      {sessionId.substring(0, 8)}...
                     </span>
                   )}
                 </div>
               )}
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            <LanguageSwitcher />
             {!isHistoryView && <HistoryButton onClick={handleHistoryClick} />}
             <SettingsButton onClick={handleSettingsClick} />
           </div>

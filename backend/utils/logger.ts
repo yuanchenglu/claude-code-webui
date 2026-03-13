@@ -62,20 +62,12 @@ export async function setupLogger(debugMode: boolean): Promise<void> {
  * Centralized loggers for different categories
  */
 export const logger = {
-  // CLI and startup logging
   cli: getLogger(["cli"]),
-
-  // Chat handling and streaming
   chat: getLogger(["chat"]),
-
-  // History and conversation management
   history: getLogger(["history"]),
-
-  // API handlers
   api: getLogger(["api"]),
-
-  // General application logging
   app: getLogger(["app"]),
+  permission: getLogger(["permission"]),
 };
 
 /**

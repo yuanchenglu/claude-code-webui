@@ -1,4 +1,3 @@
-// API configuration - uses relative paths with Vite proxy in development
 export const API_CONFIG = {
   ENDPOINTS: {
     CHAT: "/api/chat",
@@ -6,6 +5,7 @@ export const API_CONFIG = {
     PROJECTS: "/api/projects",
     HISTORIES: "/api/projects",
     CONVERSATIONS: "/api/projects",
+    PERMISSION: "/api/permission",
   },
 } as const;
 
@@ -35,10 +35,13 @@ export const getHistoriesUrl = (projectPath: string) => {
   return `${API_CONFIG.ENDPOINTS.HISTORIES}/${encodedPath}/histories`;
 };
 
-// Helper function to get conversation URL
 export const getConversationUrl = (
   encodedProjectName: string,
   sessionId: string,
 ) => {
   return `${API_CONFIG.ENDPOINTS.CONVERSATIONS}/${encodedProjectName}/histories/${sessionId}`;
+};
+
+export const getPermissionUrl = () => {
+  return API_CONFIG.ENDPOINTS.PERMISSION;
 };

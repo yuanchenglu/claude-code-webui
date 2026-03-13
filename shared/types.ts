@@ -1,7 +1,12 @@
 export interface StreamResponse {
-  type: "claude_json" | "error" | "done" | "aborted";
-  data?: unknown; // SDKMessage object for claude_json type
+  type: "claude_json" | "error" | "done" | "aborted" | "permission_request" | "ask_user_question";
+  data?: unknown;
   error?: string;
+  permissionRequestId?: string;
+  toolName?: string;
+  toolInput?: Record<string, unknown>;
+  question?: string;
+  suggestions?: string[];
 }
 
 export interface ChatRequest {
@@ -44,10 +49,23 @@ export interface HistoryListResponse {
 // Frontend should cast to TimestampedSDKMessage[] (defined in frontend/src/types.ts)
 export interface ConversationHistory {
   sessionId: string;
-  messages: unknown[]; // TimestampedSDKMessage[] in practice, but avoiding frontend type dependency
+  messages: unknown[];
   metadata: {
     startTime: string;
     endTime: string;
     messageCount: number;
   };
+}
+
+export interface PermissionResponse {
+  requestId: string;
+  allow: boolean;
+  rememberEntry?: string;
+  updatedInput?: Record<string, unknown>;
+  message?: string;
+}
+
+export interface AskUserResponse {
+  requestId: string;
+  answer: string | string[];
 }

@@ -1,0 +1,135 @@
+{
+  "app": {
+    "title": "Claude Code Web UI",
+    "demo": "(Demo)"
+  },
+  "nav": {
+    "backToChat": "Back to chat",
+    "backToHistory": "Back to history",
+    "backToProjects": "Back to project selection",
+    "conversationHistory": "History",
+    "conversation": "Chat"
+  },
+  "session": {
+    "label": "Session"
+  },
+  "loading": {
+    "projects": "Loading projects...",
+    "conversations": "Loading conversations...",
+    "conversationHistory": "Loading conversation history...",
+    "project": "Loading project...",
+    "demo": "Loading demo..."
+  },
+  "error": {
+    "loadingConversation": "Error Loading Conversation",
+    "loadingHistory": "Error Loading History",
+    "failedResponse": "Error: Failed to get response",
+    "generic": "Error: {{message}}"
+  },
+  "empty": {
+    "noConversations": "No Conversations Yet",
+    "startChatting": "Start chatting to see your conversation history here.",
+    "startConversation": "Start a conversation with Claude",
+    "typeToBegin": "Type your message below to begin"
+  },
+  "project": {
+    "select": "Select a Project",
+    "recent": "Recent Projects"
+  },
+  "settings": {
+    "title": "Settings",
+    "close": "Close settings",
+    "open": "Open settings",
+    "general": "General Settings",
+    "theme": "Theme",
+    "themeToggle": "Theme toggle. Currently set to {{current}} mode. Click to switch to {{other}} mode.",
+    "lightMode": "Light Mode",
+    "darkMode": "Dark Mode",
+    "clickToSwitch": "Click to switch to {{mode}} mode",
+    "enterKeyBehavior": "Enter Key Behavior",
+    "enterKeyToggle": "Enter key behavior toggle. Currently set to {{behavior}}. Click to switch behavior.",
+    "enterToSend": "Enter to Send",
+    "enterForNewline": "Enter for Newline",
+    "enterToSendDesc": "Enter sends message, Shift+Enter for newline",
+    "enterForNewlineDesc": "Enter adds newline, Shift+Enter sends message",
+    "enterKeyDesc": "Controls how the Enter key behaves when typing messages in the chat input.",
+    "lightModeEnabled": "Light mode enabled",
+    "darkModeEnabled": "Dark mode enabled",
+    "enterSends": "Enter key sends messages",
+    "enterNewlines": "Enter key creates newlines"
+  },
+  "chat": {
+    "user": "User",
+    "claude": "Claude",
+    "thinking": "Thinking...",
+    "processing": "Processing...",
+    "typeMessage": "Type message...",
+    "send": "Send",
+    "plan": "Plan",
+    "stop": "Stop (ESC)",
+    "viewHistory": "View conversation history"
+  },
+  "permission": {
+    "title": "Permission Required",
+    "proceed": "Do you want to proceed? (Press ESC to deny)",
+    "chooseHow": "Choose how to proceed (Press ESC to keep planning)",
+    "yes": "Yes",
+    "no": "No",
+    "yesAndDontAsk": "Yes, and don't ask again for {{commands}}",
+    "yesAndAutoAccept": "Yes, and auto-accept edits",
+    "yesAndManualApprove": "Yes, and manually approve edits",
+    "keepPlanning": "No, keep planning",
+    "wantsToUse": "Claude wants to use the following commands:",
+    "wantsToUseSingle": "Claude wants to use the {{command}} command.",
+    "wantsToUseBash": "Claude wants to use bash commands, but the specific commands could not be determined."
+  },
+  "message": {
+    "model": "Model:",
+    "session": "Session:",
+    "tools": "Tools:",
+    "cwd": "CWD:",
+    "permissionMode": "Permission Mode:",
+    "apiKeySource": "API Key Source:",
+    "duration": "Duration:",
+    "cost": "Cost:",
+    "tokens": "Tokens:",
+    "system": "System",
+    "result": "Result",
+    "error": "Error",
+    "message": "Message",
+    "readyToCode": "Ready to code?",
+    "hereIsPlan": "Here is Claude's plan:",
+    "reasoning": "Claude's Reasoning",
+    "todoUpdated": "Todo List Updated",
+    "completed": "Completed",
+    "inProgress": "In progress",
+    "pending": "Pending",
+    "ofCompleted": "{{completed}} of {{total}} completed"
+  },
+  "mode": {
+    "normal": "normal mode",
+    "plan": "plan mode",
+    "acceptEdits": "accept edits",
+    "clickToCycle": "Current: {{mode}} - Click to cycle (Ctrl+Shift+M)"
+  },
+  "demo": {
+    "controls": "Demo Controls - Scenario:",
+    "step": "Step:",
+    "status": "Status:",
+    "completed": "Completed",
+    "paused": "Paused",
+    "typing": "Typing",
+    "running": "Running",
+    "resume": "Resume",
+    "pause": "Pause",
+    "reset": "Reset Demo",
+    "restart": "Restart"
+  },
+  "button": {
+    "newConversation": "Start New Conversation",
+    "messages": "messages"
+  },
+  "time": {
+    "sentAt": "Sent at {{time}}"
+  }
+}

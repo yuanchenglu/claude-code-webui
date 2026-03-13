@@ -1,6 +1,12 @@
 import type { AllMessage, ChatMessage } from "../../types";
 import { useMessageConverter } from "../useMessageConverter";
 
+export interface PermissionRequestData {
+  requestId: string;
+  toolName: string;
+  toolInput: Record<string, unknown>;
+}
+
 export interface StreamingContext {
   currentAssistantMessage: ChatMessage | null;
   setCurrentAssistantMessage: (msg: ChatMessage | null) => void;
@@ -17,6 +23,7 @@ export interface StreamingContext {
     toolUseId: string,
   ) => void;
   onAbortRequest?: () => void;
+  onPermissionRequest?: (data: PermissionRequestData) => void;
 }
 
 /**

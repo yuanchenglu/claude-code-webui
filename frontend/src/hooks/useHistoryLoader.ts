@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import type { AllMessage, TimestampedSDKMessage } from "../types";
 import type { ConversationHistory } from "../../../shared/types";
 import { getConversationUrl } from "../config/api";
 import { useMessageConverter } from "./useMessageConverter";
+import { convertConversationHistory as convertMessages } from "../utils/messageConversion";
 
 interface HistoryLoaderState {
   messages: AllMessage[];
@@ -13,10 +14,10 @@ interface HistoryLoaderState {
 
 interface HistoryLoaderResult extends HistoryLoaderState {
   loadHistory: (projectPath: string, sessionId: string) => Promise<void>;
+  appendMessages: (newMessages: AllMessage[]) => void;
   clearHistory: () => void;
 }
 
-// Type guard to check if a message is a TimestampedSDKMessage
 function isTimestampedSDKMessage(
   message: unknown,
 ): message is TimestampedSDKMessage {
@@ -29,9 +30,6 @@ function isTimestampedSDKMessage(
   );
 }
 
-/**
- * Hook for loading and converting conversation history from the backend
- */
 export function useHistoryLoader(): HistoryLoaderResult {
   const [state, setState] = useState<HistoryLoaderState>({
     messages: [],
@@ -71,7 +69,6 @@ export function useHistoryLoader(): HistoryLoaderResult {
 
         const conversationHistory: ConversationHistory = await response.json();
 
-        // Validate the response structure
         if (
           !conversationHistory.messages ||
           !Array.isArray(conversationHistory.messages)
@@ -79,7 +76,6 @@ export function useHistoryLoader(): HistoryLoaderResult {
           throw new Error("Invalid conversation history format");
         }
 
-        // Convert unknown[] to TimestampedSDKMessage[] with type checking
         const timestampedMessages: TimestampedSDKMessage[] = [];
         for (const msg of conversationHistory.messages) {
           if (isTimestampedSDKMessage(msg)) {
@@ -89,7 +85,6 @@ export function useHistoryLoader(): HistoryLoaderResult {
           }
         }
 
-        // Convert to frontend message format
         const convertedMessages =
           convertConversationHistory(timestampedMessages);
 
@@ -115,6 +110,15 @@ export function useHistoryLoader(): HistoryLoaderResult {
     [convertConversationHistory],
   );
 
+  const appendMessages = useCallback((newMessages: AllMessage[]) => {
+    if (newMessages.length === 0) return;
+
+    setState((prev) => ({
+      ...prev,
+      messages: [...prev.messages, ...newMessages],
+    }));
+  }, []);
+
   const clearHistory = useCallback(() => {
     setState({
       messages: [],
@@ -127,28 +131,71 @@ export function useHistoryLoader(): HistoryLoaderResult {
   return {
     ...state,
     loadHistory,
+    appendMessages,
     clearHistory,
   };
 }
 
-/**
- * Hook for loading conversation history on mount when sessionId is provided
- */
+const POLLING_INTERVAL_MS = 3000;
+
 export function useAutoHistoryLoader(
   encodedProjectName?: string,
   sessionId?: string,
+  enablePolling = false,
 ): HistoryLoaderResult {
   const historyLoader = useHistoryLoader();
+  const lastMessageCountRef = useRef(0);
 
   useEffect(() => {
     if (encodedProjectName && sessionId) {
       historyLoader.loadHistory(encodedProjectName, sessionId);
     } else if (!sessionId) {
-      // Only clear if there's no sessionId - don't clear while waiting for encodedProjectName
       historyLoader.clearHistory();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [encodedProjectName, sessionId]);
+  }, [encodedProjectName, sessionId, historyLoader.loadHistory, historyLoader.clearHistory]);
+
+  useEffect(() => {
+    if (!enablePolling || !encodedProjectName || !sessionId) {
+      return;
+    }
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const response = await fetch(
+          getConversationUrl(encodedProjectName, sessionId),
+        );
+
+        if (response.ok) {
+          const conversationHistory: ConversationHistory = await response.json();
+          const messages = conversationHistory.messages || [];
+          const messageCount = messages.length;
+
+          if (messageCount > lastMessageCountRef.current) {
+            const startIndex = lastMessageCountRef.current;
+            const newRawMessages = messages.slice(startIndex);
+
+            const timestampedMessages: TimestampedSDKMessage[] = [];
+            for (const msg of newRawMessages) {
+              if (isTimestampedSDKMessage(msg)) {
+                timestampedMessages.push(msg);
+              }
+            }
+
+            if (timestampedMessages.length > 0) {
+              const convertedMessages = convertMessages(timestampedMessages);
+              historyLoader.appendMessages(convertedMessages);
+            }
+
+            lastMessageCountRef.current = messageCount;
+          }
+        }
+      } catch (error) {
+        console.error("Polling error:", error);
+      }
+    }, POLLING_INTERVAL_MS);
+
+    return () => clearInterval(pollInterval);
+  }, [enablePolling, encodedProjectName, sessionId, historyLoader]);
 
   return historyLoader;
 }

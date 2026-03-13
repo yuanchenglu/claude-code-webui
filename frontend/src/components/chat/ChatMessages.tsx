@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import type { AllMessage } from "../../types";
 import {
   isChatMessage,
@@ -19,7 +19,6 @@ import {
   TodoMessageComponent,
   LoadingComponent,
 } from "../MessageComponents";
-// import { UI_CONSTANTS } from "../../utils/constants"; // Unused for now
 
 interface ChatMessagesProps {
   messages: AllMessage[];
@@ -29,30 +28,26 @@ interface ChatMessagesProps {
 export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const initialLoadDoneRef = useRef(false);
 
-  // Auto-scroll to bottom
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     if (messagesEndRef.current && messagesEndRef.current.scrollIntoView) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  };
+  }, []);
 
-  // Check if user is near bottom of messages (unused but kept for future use)
-  // const isNearBottom = () => {
-  //   const container = messagesContainerRef.current;
-  //   if (!container) return true;
-
-  //   const { scrollTop, scrollHeight, clientHeight } = container;
-  //   return (
-  //     scrollHeight - scrollTop - clientHeight <
-  //     UI_CONSTANTS.NEAR_BOTTOM_THRESHOLD_PX
-  //   );
-  // };
-
-  // Auto-scroll when messages change
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (messages.length > 0 && !initialLoadDoneRef.current) {
+      initialLoadDoneRef.current = true;
+      setTimeout(() => scrollToBottom(), 100);
+    }
+  }, [messages.length, scrollToBottom]);
+
+  useEffect(() => {
+    if (isLoading) {
+      scrollToBottom();
+    }
+  }, [isLoading, scrollToBottom]);
 
   const renderMessage = (message: AllMessage, index: number) => {
     // Use timestamp as key for stable rendering, fallback to index if needed

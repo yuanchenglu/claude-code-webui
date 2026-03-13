@@ -39,14 +39,12 @@ export function groupConversations(
     }
   }
 
-  // Convert to ConversationSummary format and sort by start time (newest first)
   const summaries = uniqueConversations.map((conv) =>
     createConversationSummary(conv),
   );
 
-  // Sort by start time, newest first
   summaries.sort(
-    (a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
+    (a, b) => new Date(b.lastTime).getTime() - new Date(a.lastTime).getTime(),
   );
 
   return summaries;

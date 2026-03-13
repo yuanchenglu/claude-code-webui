@@ -11,38 +11,27 @@ import {
   isResultMessage,
   isUserMessage,
 } from "../../utils/messageTypes";
-import type { StreamingContext } from "./useMessageProcessor";
+import type { StreamingContext, PermissionRequestData } from "./useMessageProcessor";
 import {
   UnifiedMessageProcessor,
   type ProcessingContext,
 } from "../../utils/UnifiedMessageProcessor";
 
 export function useStreamParser() {
-  // Create a single unified processor instance
   const processor = useMemo(() => new UnifiedMessageProcessor(), []);
 
-  // Convert StreamingContext to ProcessingContext
   const adaptContext = useCallback(
     (context: StreamingContext): ProcessingContext => {
       return {
-        // Core message handling
         addMessage: context.addMessage,
         updateLastMessage: context.updateLastMessage,
-
-        // Current assistant message state
         currentAssistantMessage: context.currentAssistantMessage,
         setCurrentAssistantMessage: context.setCurrentAssistantMessage,
-
-        // Session handling
         onSessionId: context.onSessionId,
         hasReceivedInit: context.hasReceivedInit,
         setHasReceivedInit: context.setHasReceivedInit,
-
-        // Init message handling
         shouldShowInitMessage: context.shouldShowInitMessage,
         onInitMessageShown: context.onInitMessageShown,
-
-        // Permission/Error handling
         onPermissionError: context.onPermissionError,
         onAbortRequest: context.onAbortRequest,
       };
@@ -54,7 +43,6 @@ export function useStreamParser() {
     (claudeData: SDKMessage, context: StreamingContext) => {
       const processingContext = adaptContext(context);
 
-      // Validate message types before processing
       switch (claudeData.type) {
         case "system":
           if (!isSystemMessage(claudeData)) {
@@ -85,7 +73,6 @@ export function useStreamParser() {
           return;
       }
 
-      // Process the message using the unified processor
       processor.processMessage(claudeData, processingContext, {
         isStreaming: true,
       });
@@ -99,9 +86,17 @@ export function useStreamParser() {
         const data: StreamResponse = JSON.parse(line);
 
         if (data.type === "claude_json" && data.data) {
-          // data.data is already an SDKMessage object, no need to parse
           const claudeData = data.data as SDKMessage;
           processClaudeData(claudeData, context);
+        } else if (data.type === "permission_request") {
+          if (context.onPermissionRequest && data.permissionRequestId) {
+            const permissionData: PermissionRequestData = {
+              requestId: data.permissionRequestId,
+              toolName: data.toolName || "Unknown",
+              toolInput: data.toolInput || {},
+            };
+            context.onPermissionRequest(permissionData);
+          }
         } else if (data.type === "error") {
           const errorMessage: SystemMessage = {
             type: "error",

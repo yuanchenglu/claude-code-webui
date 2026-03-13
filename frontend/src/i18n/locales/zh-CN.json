@@ -1,0 +1,135 @@
+{
+  "app": {
+    "title": "Claude Code Web UI",
+    "demo": "(演示)"
+  },
+  "nav": {
+    "backToChat": "返回聊天",
+    "backToHistory": "返回历史",
+    "backToProjects": "返回项目选择",
+    "conversationHistory": "历史",
+    "conversation": "聊天"
+  },
+  "session": {
+    "label": "会话"
+  },
+  "loading": {
+    "projects": "加载项目中...",
+    "conversations": "加载对话中...",
+    "conversationHistory": "加载对话历史中...",
+    "project": "加载项目中...",
+    "demo": "加载演示中..."
+  },
+  "error": {
+    "loadingConversation": "加载对话失败",
+    "loadingHistory": "加载历史失败",
+    "failedResponse": "错误：获取响应失败",
+    "generic": "错误：{{message}}"
+  },
+  "empty": {
+    "noConversations": "暂无对话",
+    "startChatting": "开始聊天后，对话历史将显示在这里。",
+    "startConversation": "开始与 Claude 对话",
+    "typeToBegin": "在下方输入消息开始对话"
+  },
+  "project": {
+    "select": "选择项目",
+    "recent": "最近项目"
+  },
+  "settings": {
+    "title": "设置",
+    "close": "关闭设置",
+    "open": "打开设置",
+    "general": "通用设置",
+    "theme": "主题",
+    "themeToggle": "主题切换。当前为{{current}}模式。点击切换到{{other}}模式。",
+    "lightMode": "浅色模式",
+    "darkMode": "深色模式",
+    "clickToSwitch": "点击切换到{{mode}}模式",
+    "enterKeyBehavior": "回车键行为",
+    "enterKeyToggle": "回车键行为切换。当前设置为{{behavior}}。点击切换行为。",
+    "enterToSend": "回车发送",
+    "enterForNewline": "回车换行",
+    "enterToSendDesc": "回车发送消息，Shift+回车换行",
+    "enterForNewlineDesc": "回车换行，Shift+回车发送消息",
+    "enterKeyDesc": "控制输入消息时回车键的行为。",
+    "lightModeEnabled": "浅色模式已启用",
+    "darkModeEnabled": "深色模式已启用",
+    "enterSends": "回车键发送消息",
+    "enterNewlines": "回车键换行"
+  },
+  "chat": {
+    "user": "用户",
+    "claude": "Claude",
+    "thinking": "思考中...",
+    "processing": "处理中...",
+    "typeMessage": "输入消息...",
+    "send": "发送",
+    "plan": "计划",
+    "stop": "停止 (ESC)",
+    "viewHistory": "查看对话历史"
+  },
+  "permission": {
+    "title": "需要权限确认",
+    "proceed": "是否继续？（按 ESC 拒绝）",
+    "chooseHow": "选择如何继续（按 ESC 继续规划）",
+    "yes": "是",
+    "no": "否",
+    "yesAndDontAsk": "是，且不再询问{{commands}}",
+    "yesAndAutoAccept": "是，并自动接受编辑",
+    "yesAndManualApprove": "是，并手动批准编辑",
+    "keepPlanning": "否，继续规划",
+    "wantsToUse": "Claude 想要使用以下命令：",
+    "wantsToUseSingle": "Claude 想要使用 {{command}} 命令。",
+    "wantsToUseBash": "Claude 想要使用 bash 命令，但无法确定具体命令。"
+  },
+  "message": {
+    "model": "模型：",
+    "session": "会话：",
+    "tools": "工具：",
+    "cwd": "工作目录：",
+    "permissionMode": "权限模式：",
+    "apiKeySource": "API 密钥来源：",
+    "duration": "耗时：",
+    "cost": "费用：",
+    "tokens": "Token：",
+    "system": "系统",
+    "result": "结果",
+    "error": "错误",
+    "message": "消息",
+    "readyToCode": "准备好编码了吗？",
+    "hereIsPlan": "这是 Claude 的计划：",
+    "reasoning": "Claude 的推理",
+    "todoUpdated": "待办列表已更新",
+    "completed": "已完成",
+    "inProgress": "进行中",
+    "pending": "待处理",
+    "ofCompleted": "已完成 {{completed}}/{{total}}"
+  },
+  "mode": {
+    "normal": "普通模式",
+    "plan": "计划模式",
+    "acceptEdits": "接受编辑",
+    "clickToCycle": "当前：{{mode}} - 点击切换 (Ctrl+Shift+M)"
+  },
+  "demo": {
+    "controls": "演示控制 - 场景：",
+    "step": "步骤：",
+    "status": "状态：",
+    "completed": "已完成",
+    "paused": "已暂停",
+    "typing": "输入中",
+    "running": "运行中",
+    "resume": "继续",
+    "pause": "暂停",
+    "reset": "重置演示",
+    "restart": "重新开始"
+  },
+  "button": {
+    "newConversation": "开始新对话",
+    "messages": "条消息"
+  },
+  "time": {
+    "sentAt": "发送于 {{time}}"
+  }
+}
