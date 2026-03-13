@@ -49,5 +49,7 @@ export interface ConversationHistory {
     startTime: string;
     endTime: string;
     messageCount: number;
+    totalCount?: number;
+    hasMore?: boolean;
   };
 }

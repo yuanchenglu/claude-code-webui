@@ -13,7 +13,9 @@
     "loading": "Loading conversation history...",
     "errorLoading": "Error Loading Conversation",
     "startNew": "Start New Conversation",
-    "session": "Session"
+    "session": "Session",
+    "loadMore": "Load more messages...",
+    "loadingMore": "Loading..."
   },
   "history": {
     "title": "Conversation History",

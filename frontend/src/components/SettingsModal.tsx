@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { GeneralSettings } from "./settings/GeneralSettings";
 
@@ -8,6 +9,8 @@ interface SettingsModalProps {
 }
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
+  const { t } = useTranslation();
+
   // Handle ESC key to close modal
   useEffect(() => {
     const handleEscKey = (event: KeyboardEvent) => {
@@ -45,9 +48,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
           <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">
-            Settings
+            {t("settings.title")}
           </h2>
           <button
+            type="button"
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
             aria-label="Close settings"

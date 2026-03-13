@@ -6,6 +6,7 @@ import { logger } from "../utils/logger.ts";
 /**
  * Handles GET /api/projects/:encodedProjectName/histories/:sessionId requests
  * Retrieves detailed conversation history for a specific session
+ * Supports pagination via ?limit=N&offset=M query parameters
  * @param c - Hono context object with config variables
  * @returns JSON response with conversation details
  */
@@ -26,6 +27,11 @@ export async function handleConversationRequest(c: Context) {
       return c.json({ error: "Invalid encoded project name" }, 400);
     }
 
+    const limitParam = c.req.query("limit");
+    const offsetParam = c.req.query("offset");
+    const limit = limitParam ? parseInt(limitParam, 10) : undefined;
+    const offset = offsetParam ? parseInt(offsetParam, 10) : undefined;
+
     logger.history.debug(
       `Fetching conversation details for project: ${encodedProjectName}, session: ${sessionId}`,
     );
@@ -34,6 +40,7 @@ export async function handleConversationRequest(c: Context) {
     const conversationHistory = await loadConversation(
       encodedProjectName,
       sessionId,
+      { limit, offset },
     );
 
     if (!conversationHistory) {

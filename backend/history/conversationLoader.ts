@@ -11,12 +11,18 @@ import { validateEncodedProjectName } from "./pathUtils.ts";
 import { readTextFile, exists } from "../utils/fs.ts";
 import { getHomeDir } from "../utils/os.ts";
 
+interface PaginationOptions {
+  limit?: number;
+  offset?: number;
+}
+
 /**
  * Load a specific conversation by session ID
  */
 export async function loadConversation(
   encodedProjectName: string,
   sessionId: string,
+  pagination?: PaginationOptions,
 ): Promise<ConversationHistory | null> {
   // Validate inputs
   if (!validateEncodedProjectName(encodedProjectName)) {
@@ -46,6 +52,7 @@ export async function loadConversation(
     const conversationHistory = await parseConversationFile(
       filePath,
       sessionId,
+      pagination,
     );
     return conversationHistory;
   } catch (error) {
@@ -60,6 +67,7 @@ export async function loadConversation(
 async function parseConversationFile(
   filePath: string,
   sessionId: string,
+  pagination?: PaginationOptions,
 ): Promise<ConversationHistory> {
   const content = await readTextFile(filePath);
   const lines = content
@@ -81,7 +89,6 @@ async function parseConversationFile(
       logger.history.error(`Failed to parse line in ${filePath}: {error}`, {
         error: parseError,
       });
-      // Continue processing other lines
     }
   }
 
@@ -91,10 +98,25 @@ async function parseConversationFile(
     sessionId,
   );
 
+  const totalCount = processedMessages.length;
+
+  // Apply pagination (return latest messages first, then older ones)
+  let paginatedMessages = processedMessages;
+  if (pagination?.limit !== undefined) {
+    const offset = pagination.offset ?? 0;
+    const startIdx = Math.max(0, totalCount - pagination.limit - offset);
+    const endIdx = totalCount - offset;
+    paginatedMessages = processedMessages.slice(startIdx, endIdx);
+  }
+
   return {
     sessionId,
-    messages: processedMessages,
-    metadata,
+    messages: paginatedMessages,
+    metadata: {
+      ...metadata,
+      totalCount,
+      hasMore: pagination?.limit !== undefined && totalCount > pagination.limit + (pagination.offset ?? 0),
+    },
   };
 }
 

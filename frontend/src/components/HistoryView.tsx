@@ -144,7 +144,7 @@ export function HistoryView({ encodedName }: HistoryViewProps) {
                     {t("chat.session")}: {conversation.sessionId.substring(0, 8)}...
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                    {new Date(conversation.startTime).toLocaleString()} •{" "}
+                    {t("history.lastActive")}: {new Date(conversation.lastTime).toLocaleString()} •{" "}
                     {conversation.messageCount} {t("history.messages")}
                   </p>
                   <p className="text-sm text-slate-600 dark:text-slate-300 mt-2 line-clamp-2">

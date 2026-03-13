@@ -4,15 +4,20 @@ import type { ConversationHistory } from "../../../shared/types";
 import { getConversationUrl } from "../config/api";
 import { useMessageConverter } from "./useMessageConverter";
 
+const INITIAL_LOAD_LIMIT = 20;
+
 interface HistoryLoaderState {
   messages: AllMessage[];
   loading: boolean;
   error: string | null;
   sessionId: string | null;
+  hasMore: boolean;
+  totalCount: number;
 }
 
 interface HistoryLoaderResult extends HistoryLoaderState {
   loadHistory: (projectPath: string, sessionId: string) => Promise<void>;
+  loadMore: () => Promise<void>;
   clearHistory: () => void;
 }
 
@@ -38,6 +43,8 @@ export function useHistoryLoader(): HistoryLoaderResult {
     loading: false,
     error: null,
     sessionId: null,
+    hasMore: false,
+    totalCount: 0,
   });
 
   const { convertConversationHistory } = useMessageConverter();
@@ -60,7 +67,7 @@ export function useHistoryLoader(): HistoryLoaderResult {
         }));
 
         const response = await fetch(
-          getConversationUrl(encodedProjectName, sessionId),
+          `${getConversationUrl(encodedProjectName, sessionId)}?limit=${INITIAL_LOAD_LIMIT}`,
         );
 
         if (!response.ok) {
@@ -71,7 +78,6 @@ export function useHistoryLoader(): HistoryLoaderResult {
 
         const conversationHistory: ConversationHistory = await response.json();
 
-        // Validate the response structure
         if (
           !conversationHistory.messages ||
           !Array.isArray(conversationHistory.messages)
@@ -79,7 +85,6 @@ export function useHistoryLoader(): HistoryLoaderResult {
           throw new Error("Invalid conversation history format");
         }
 
-        // Convert unknown[] to TimestampedSDKMessage[] with type checking
         const timestampedMessages: TimestampedSDKMessage[] = [];
         for (const msg of conversationHistory.messages) {
           if (isTimestampedSDKMessage(msg)) {
@@ -89,7 +94,6 @@ export function useHistoryLoader(): HistoryLoaderResult {
           }
         }
 
-        // Convert to frontend message format
         const convertedMessages =
           convertConversationHistory(timestampedMessages);
 
@@ -98,6 +102,8 @@ export function useHistoryLoader(): HistoryLoaderResult {
           messages: convertedMessages,
           loading: false,
           sessionId: conversationHistory.sessionId,
+          hasMore: conversationHistory.metadata?.hasMore ?? false,
+          totalCount: conversationHistory.metadata?.totalCount ?? convertedMessages.length,
         }));
       } catch (error) {
         console.error("Error loading conversation history:", error);
@@ -115,18 +121,69 @@ export function useHistoryLoader(): HistoryLoaderResult {
     [convertConversationHistory],
   );
 
+  const loadMore = useCallback(async () => {
+    const currentCount = state.messages.length;
+    if (!state.sessionId || state.loading || !state.hasMore) return;
+
+    try {
+      setState((prev) => ({ ...prev, loading: true }));
+
+      const encodedProjectName = window.location.pathname
+        .split("/")[2]
+        ? decodeURIComponent(window.location.pathname.split("/")[2])
+        : null;
+
+      if (!encodedProjectName) return;
+
+      const response = await fetch(
+        `${getConversationUrl(
+          encodeURIComponent(encodedProjectName),
+          state.sessionId,
+        )}?limit=${INITIAL_LOAD_LIMIT}&offset=${currentCount}`,
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to load more: ${response.status}`);
+      }
+
+      const conversationHistory: ConversationHistory = await response.json();
+
+      const timestampedMessages: TimestampedSDKMessage[] = [];
+      for (const msg of conversationHistory.messages) {
+        if (isTimestampedSDKMessage(msg)) {
+          timestampedMessages.push(msg);
+        }
+      }
+
+      const newMessages = convertConversationHistory(timestampedMessages);
+
+      setState((prev) => ({
+        ...prev,
+        messages: [...newMessages, ...prev.messages],
+        loading: false,
+        hasMore: conversationHistory.metadata?.hasMore ?? false,
+      }));
+    } catch (error) {
+      console.error("Error loading more messages:", error);
+      setState((prev) => ({ ...prev, loading: false }));
+    }
+  }, [state.sessionId, state.messages.length, state.loading, state.hasMore, convertConversationHistory]);
+
   const clearHistory = useCallback(() => {
     setState({
       messages: [],
       loading: false,
       error: null,
       sessionId: null,
+      hasMore: false,
+      totalCount: 0,
     });
   }, []);
 
   return {
     ...state,
     loadHistory,
+    loadMore,
     clearHistory,
   };
 }
@@ -144,7 +201,6 @@ export function useAutoHistoryLoader(
     if (encodedProjectName && sessionId) {
       historyLoader.loadHistory(encodedProjectName, sessionId);
     } else if (!sessionId) {
-      // Only clear if there's no sessionId - don't clear while waiting for encodedProjectName
       historyLoader.clearHistory();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

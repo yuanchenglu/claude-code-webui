@@ -13,7 +13,9 @@
     "loading": "正在加载对话历史...",
     "errorLoading": "加载对话失败",
     "startNew": "开始新对话",
-    "session": "会话"
+    "session": "会话",
+    "loadMore": "加载更多消息...",
+    "loadingMore": "正在加载..."
   },
   "history": {
     "title": "对话历史",
@@ -35,7 +37,7 @@
     "system": "跟随系统",
     "enterKeyBehavior": "回车键行为",
     "enterToSend": "回车发送，Shift+回车换行",
-    "enterForNewLine": "回车换行，Ctrl/Cmd+回车发送"
+    "enterForNewLine": "回车换行，Shift+回车发送"
   },
   "language": {
     "switchToZh": "切换到中文",

@@ -84,6 +84,8 @@ export function ChatPage() {
     loading: historyLoading,
     error: historyError,
     sessionId: loadedSessionId,
+    hasMore: hasMoreHistory,
+    loadMore: loadMoreHistory,
   } = useAutoHistoryLoader(
     getEncodedName() || undefined,
     sessionId || undefined,
@@ -573,7 +575,13 @@ export function ChatPage() {
         ) : (
           <>
             {/* Chat Messages */}
-            <ChatMessages messages={messages} isLoading={isLoading} />
+            <ChatMessages
+              messages={messages}
+              isLoading={isLoading}
+              hasMore={hasMoreHistory}
+              onLoadMore={loadMoreHistory}
+              isLoadingMore={historyLoading}
+            />
 
             {/* Input */}
             <ChatInput

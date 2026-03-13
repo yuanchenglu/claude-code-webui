@@ -13,10 +13,11 @@ export function LanguageSwitcher() {
     <button
       type="button"
       onClick={toggleLanguage}
-      className="px-2 py-1 text-sm font-medium rounded-md bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 transition-all duration-200 backdrop-blur-sm shadow-sm hover:shadow-md"
+      className="p-3 rounded-xl bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 transition-all duration-200 backdrop-blur-sm shadow-sm hover:shadow-md text-sm font-medium text-slate-600 dark:text-slate-400"
       aria-label={isZh ? "Switch to English" : "切换到中文"}
+      title={isZh ? "Switch to English" : "切换到中文"}
     >
-      {isZh ? "EN" : "中文"}
+      {isZh ? "EN" : "中"}
     </button>
   );
 }

@@ -20,43 +20,26 @@ import {
   TodoMessageComponent,
   LoadingComponent,
 } from "../MessageComponents";
-// import { UI_CONSTANTS } from "../../utils/constants"; // Unused for now
 
 interface ChatMessagesProps {
   messages: AllMessage[];
   isLoading: boolean;
+  hasMore?: boolean;
+  onLoadMore?: () => void;
+  isLoadingMore?: boolean;
 }
 
-export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
+export function ChatMessages({ messages, isLoading, hasMore, onLoadMore, isLoadingMore }: ChatMessagesProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom
-  const scrollToBottom = () => {
+  useEffect(() => {
     if (messagesEndRef.current && messagesEndRef.current.scrollIntoView) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  };
-
-  // Check if user is near bottom of messages (unused but kept for future use)
-  // const isNearBottom = () => {
-  //   const container = messagesContainerRef.current;
-  //   if (!container) return true;
-
-  //   const { scrollTop, scrollHeight, clientHeight } = container;
-  //   return (
-  //     scrollHeight - scrollTop - clientHeight <
-  //     UI_CONSTANTS.NEAR_BOTTOM_THRESHOLD_PX
-  //   );
-  // };
-
-  // Auto-scroll when messages change
-  useEffect(() => {
-    scrollToBottom();
   }, [messages]);
 
   const renderMessage = (message: AllMessage, index: number) => {
-    // Use timestamp as key for stable rendering, fallback to index if needed
     const key = `${message.timestamp}-${index}`;
 
     if (isSystemMessage(message)) {
@@ -86,14 +69,30 @@ export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
         <EmptyState />
       ) : (
         <>
-          {/* Spacer div to push messages to the bottom */}
           <div className="flex-1" aria-hidden="true"></div>
+          {hasMore && onLoadMore && (
+            <LoadMoreButton onClick={onLoadMore} isLoading={isLoadingMore} />
+          )}
           {messages.map(renderMessage)}
           {isLoading && <LoadingComponent />}
           <div ref={messagesEndRef} />
         </>
       )}
     </div>
+  );
+}
+
+function LoadMoreButton({ onClick, isLoading }: { onClick: () => void; isLoading?: boolean }) {
+  const { t } = useTranslation();
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={isLoading}
+      className="mb-4 py-2 px-4 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 bg-slate-100 dark:bg-slate-700/50 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
+    >
+      {isLoading ? t("chat.loadingMore") : t("chat.loadMore")}
+    </button>
   );
 }
 
