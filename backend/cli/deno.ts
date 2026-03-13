@@ -14,20 +14,15 @@ import { dirname, fromFileUrl, join } from "@std/path";
 import { exit } from "../utils/os.ts";
 
 async function main(runtime: DenoRuntime) {
-  // Parse CLI arguments
   const args = parseCliArgs();
-
-  // Initialize logging system
   await setupLogger(args.debug);
 
   if (args.debug) {
     logger.cli.info("🐛 Debug mode enabled");
   }
 
-  // Validate Claude CLI availability and get the detected CLI path
   const cliPath = await validateClaudeCli(runtime, args.claudePath);
 
-  // Create application
   const __dirname = dirname(fromFileUrl(import.meta.url));
   const staticPath = join(__dirname, "../dist/static");
 
@@ -37,7 +32,6 @@ async function main(runtime: DenoRuntime) {
     cliPath: cliPath,
   });
 
-  // Start server (only show this message when everything is ready)
   logger.cli.info(`🚀 Server starting on ${args.host}:${args.port}`);
   runtime.serve(args.port, args.host, app.fetch);
 }

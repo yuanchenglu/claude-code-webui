@@ -2,8 +2,19 @@ import { Context } from "hono";
 import type { ProjectInfo, ProjectsResponse } from "../../shared/types.ts";
 import { getEncodedProjectName } from "../history/pathUtils.ts";
 import { logger } from "../utils/logger.ts";
-import { readTextFile } from "../utils/fs.ts";
+import { readTextFile, exists, readDir } from "../utils/fs.ts";
 import { getHomeDir } from "../utils/os.ts";
+import { join } from "node:path";
+
+interface DirectoryEntry {
+  path: string;
+  name: string;
+  isDirectory: boolean;
+}
+
+interface SearchDirectoriesResponse {
+  directories: DirectoryEntry[];
+}
 
 /**
  * Handles GET /api/projects requests
@@ -57,5 +68,69 @@ export async function handleProjectsRequest(c: Context) {
   } catch (error) {
     logger.api.error("Error reading projects: {error}", { error });
     return c.json({ error: "Failed to read projects" }, 500);
+  }
+}
+
+export async function handleSearchDirectoriesRequest(c: Context) {
+  try {
+    const body = await c.req.json();
+    const { searchPath } = body as { searchPath: string };
+
+    if (!searchPath || typeof searchPath !== "string") {
+      return c.json({ error: "Invalid search path" }, 400);
+    }
+
+    const homeDir = getHomeDir();
+    if (!homeDir) {
+      return c.json({ error: "Home directory not found" }, 500);
+    }
+
+    let targetPath: string;
+
+    if (searchPath.startsWith("~")) {
+      targetPath = join(homeDir, searchPath.slice(1));
+    } else if (searchPath.startsWith("/")) {
+      targetPath = searchPath;
+    } else {
+      targetPath = join(homeDir, searchPath);
+    }
+
+    if (!(await exists(targetPath))) {
+      const parentPath = join(targetPath, "..");
+
+      if (await exists(parentPath)) {
+        const entries: DirectoryEntry[] = [];
+        for await (const entry of readDir(parentPath)) {
+          if (entry.name.toLowerCase().includes(searchPath.split("/").pop()!.toLowerCase())) {
+            entries.push({
+              path: join(parentPath, entry.name),
+              name: entry.name,
+              isDirectory: entry.isDirectory,
+            });
+          }
+        }
+        return c.json({ directories: entries.slice(0, 20) });
+      }
+
+      return c.json({ directories: [] });
+    }
+
+    const entries: DirectoryEntry[] = [];
+    for await (const entry of readDir(targetPath)) {
+      if (entry.isDirectory && !entry.name.startsWith(".")) {
+        entries.push({
+          path: join(targetPath, entry.name),
+          name: entry.name,
+          isDirectory: true,
+        });
+      }
+    }
+
+    entries.sort((a, b) => a.name.localeCompare(b.name));
+
+    return c.json({ directories: entries.slice(0, 50) });
+  } catch (error) {
+    logger.api.error("Error searching directories: {error}", { error });
+    return c.json({ error: "Failed to search directories" }, 500);
   }
 }
