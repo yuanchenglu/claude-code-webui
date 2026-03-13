@@ -2,6 +2,7 @@ import { Context } from "hono";
 import { query, type PermissionMode } from "@anthropic-ai/claude-code";
 import type { ChatRequest, StreamResponse } from "../../shared/types.ts";
 import { logger } from "../utils/logger.ts";
+import { getPermissionConfig } from "../utils/permissionConfig.ts";
 
 /**
  * Executes a Claude command and yields streaming responses
@@ -10,7 +11,8 @@ import { logger } from "../utils/logger.ts";
  * @param requestAbortControllers - Shared map of abort controllers
  * @param cliPath - Path to actual CLI script (detected by validateClaudeCli)
  * @param sessionId - Optional session ID for conversation continuity
- * @param allowedTools - Optional array of allowed tool names
+ * @param allowedTools - Optional array of allowed tool names from frontend
+ * @param disallowedTools - Optional array of disallowed tool names from config
  * @param workingDirectory - Optional working directory for Claude execution
  * @param permissionMode - Optional permission mode for Claude execution
  * @returns AsyncGenerator yielding StreamResponse objects
@@ -22,6 +24,7 @@ async function* executeClaudeCommand(
   cliPath: string,
   sessionId?: string,
   allowedTools?: string[],
+  disallowedTools?: string[],
   workingDirectory?: string,
   permissionMode?: PermissionMode,
 ): AsyncGenerator<StreamResponse> {
@@ -47,7 +50,10 @@ async function* executeClaudeCommand(
         executableArgs: [],
         pathToClaudeCodeExecutable: cliPath,
         ...(sessionId ? { resume: sessionId } : {}),
-        ...(allowedTools ? { allowedTools } : {}),
+        ...(allowedTools && allowedTools.length > 0 ? { allowedTools } : {}),
+        ...(disallowedTools && disallowedTools.length > 0
+          ? { disallowedTools }
+          : {}),
         ...(workingDirectory ? { cwd: workingDirectory } : {}),
         ...(permissionMode ? { permissionMode } : {}),
       },
@@ -101,6 +107,21 @@ export async function handleChatRequest(
     chatRequest as unknown as Record<string, unknown>,
   );
 
+  const permissionConfig = await getPermissionConfig();
+  const frontendAllowedTools = chatRequest.allowedTools || [];
+  const mergedAllowedTools = [
+    ...new Set([...permissionConfig.allowedTools, ...frontendAllowedTools]),
+  ];
+
+  logger.chat.debug(
+    "Permission config: allowed={allowed}, denied={denied}, merged={merged}",
+    {
+      allowed: permissionConfig.allowedTools,
+      denied: permissionConfig.disallowedTools,
+      merged: mergedAllowedTools,
+    },
+  );
+
   const stream = new ReadableStream({
     async start(controller) {
       try {
@@ -108,9 +129,12 @@ export async function handleChatRequest(
           chatRequest.message,
           chatRequest.requestId,
           requestAbortControllers,
-          cliPath, // Use detected CLI path from validateClaudeCli
+          cliPath,
           chatRequest.sessionId,
-          chatRequest.allowedTools,
+          mergedAllowedTools,
+          permissionConfig.disallowedTools.length > 0
+            ? permissionConfig.disallowedTools
+            : undefined,
           chatRequest.workingDirectory,
           chatRequest.permissionMode,
         )) {

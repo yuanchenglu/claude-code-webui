@@ -12,7 +12,7 @@ import {
   type ConfigContext,
   createConfigMiddleware,
 } from "./middleware/config.ts";
-import { handleProjectsRequest } from "./handlers/projects.ts";
+import { handleProjectsRequest, handleSearchDirectoriesRequest } from "./handlers/projects.ts";
 import { handleHistoriesRequest } from "./handlers/histories.ts";
 import { handleConversationRequest } from "./handlers/conversations.ts";
 import { handleChatRequest } from "./handlers/chat.ts";
@@ -57,6 +57,8 @@ export function createApp(
 
   // API routes
   app.get("/api/projects", (c) => handleProjectsRequest(c));
+
+  app.post("/api/projects/search", (c) => handleSearchDirectoriesRequest(c));
 
   app.get("/api/projects/:encodedProjectName/histories", (c) =>
     handleHistoriesRequest(c),
