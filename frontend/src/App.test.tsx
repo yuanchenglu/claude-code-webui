@@ -4,6 +4,7 @@ import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { ProjectSelector } from "./components/ProjectSelector";
 import { ChatPage } from "./components/ChatPage";
 import { SettingsProvider } from "./contexts/SettingsContext";
+import "./i18n";
 
 // Mock fetch globally
 global.fetch = vi.fn();
@@ -28,7 +29,9 @@ describe("App Routing", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Select a Project")).toBeInTheDocument();
+      expect(
+        screen.getByText("Select a Project") || screen.getByText("选择项目"),
+      ).toBeInTheDocument();
     });
   });
 
