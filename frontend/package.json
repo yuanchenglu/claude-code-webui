@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
-    "dayjs": "^1.11.13",
+    "dayjs": "^1.11.19",
     "i18next": "^25.8.18",
     "react": "^19.1.0",
     "react-dom": "^19.1.1",
